@@ -43,6 +43,111 @@ Rules:
 - For mixed projects, create an ownership map first so Agents know which app/service/package owns a task.
 - For small projects, prefer one concise guide plus an Agent index over a full encyclopedia.
 
+## MCP availability and fallback
+
+This skill uses three MCP servers for enhanced analysis. Each is optional; the skill degrades gracefully when unavailable.
+
+**Detection**: Call the MCP tool and handle errors gracefully. If tool returns "not found" or "server not available", the MCP is not installed.
+
+**Installation**: MCP servers are configured in Claude Code settings. If an MCP is missing:
+- User must install and configure it in settings
+- Skill cannot auto-install (requires user permissions and settings changes)
+- Refer user to MCP documentation or Claude Code MCP setup guide
+
+**Fallback strategies**:
+
+| MCP | Purpose | Fallback when unavailable |
+| --- | --- | --- |
+| Codegraph | Semantic code analysis | Use `grep` + manual file reading (slower, less accurate) |
+| Context7 | Library documentation queries | Skip library verification, or use web search as last resort |
+| Memory | Knowledge graph construction | Skip graph construction (only impacts large projects) |
+
+**Rule**: Always check MCP availability before using. Never assume an MCP is present.
+
+## Code intelligence approach
+
+When codegraph MCP server is available, prefer semantic code analysis over manual file inspection.
+
+### Check codegraph availability
+
+Before starting manual discovery, check if codegraph is available:
+
+```
+Call `codegraph_status` to verify the index exists and is ready.
+```
+
+If codegraph is available, use the code-intelligence-first workflow below. If not, fall back to the standard manual workflow.
+
+### Code-intelligence-first workflow
+
+When codegraph is available, use this approach before reading files manually:
+
+1. **Project structure overview**: Call `codegraph_files` to see the full file tree with symbol counts
+2. **Symbol discovery**: Use `codegraph_search` to locate key symbols (API handlers, components, stores, routes)
+3. **Architectural understanding**: Use `codegraph_context` with task descriptions to get entry points and related symbols
+4. **Trace execution flows**: Use `codegraph_trace from→to` to understand how data flows through the system
+
+Fall back to manual file reading only when:
+- Codegraph index doesn't exist or is out of sync
+- Need to verify specific implementation details not captured in the graph
+- Reading config files (package.json, build configs, CI files) that codegraph doesn't index
+- Examining comments, documentation, or non-code content
+
+## Library documentation verification
+
+When dependencies are detected during project discovery, verify current API usage against official docs using Context7 MCP.
+
+### Context7 workflow
+
+1. Extract major dependencies from `package.json`, `requirements.txt`, `pom.xml`, `go.mod`, etc.
+2. For each critical dependency (frameworks, core libraries):
+   - Call `resolve-library-id` with library name and project context
+   - If library ID found, call `query-docs` with specific question about API usage patterns
+3. Compare documented API patterns against actual project usage (use codegraph to find usage)
+4. Flag version mismatches or deprecated API usage
+
+### When to use Context7
+
+Use for:
+- Framework version verification (React, Vue, Next.js, Express, Django, Spring)
+- Core library API patterns (axios, prisma, sequelize, mongoose)
+- Build tool configuration (vite, webpack, rollup, esbuild)
+
+Skip for:
+- Internal modules
+- Small utilities
+- Deprecated packages with no active docs
+
+### Token efficiency
+
+- Query only critical dependencies (≤5 libraries per project)
+- Ask specific questions about actual usage patterns found via codegraph
+- Cache resolved library IDs to avoid repeated resolution calls
+
+## Knowledge graph construction (optional)
+
+For large or long-term maintenance projects, optionally build a persistent knowledge graph using Memory MCP after project discovery.
+
+**When to use**:
+- Project has >100 files
+- Multiple domains (frontend + backend + shared)
+- Long-term maintenance expected
+- Multiple AI Agents will work on the project
+
+**When to skip**:
+- Small projects (<50 files)
+- Short-term/prototype projects
+- Memory MCP not available
+
+**Workflow**:
+
+1. Extract entities: Use `codegraph_files` and `codegraph_search` to identify key symbols (components, services, routes, stores)
+2. Create entities: `create_entities` with types (Module, Component, Service, Route, API, Store, Config) and observations (path, purpose)
+3. Extract relations: Use `codegraph_callers` and `codegraph_callees` to identify call/dependency relationships
+4. Create relations: `create_relations` with types (depends-on, calls, uses, renders, contains, imports)
+
+**Token budget**: 20-25K tokens for initial construction (recovers after 2+ graph queries vs repeated file reads)
+
 ## Standard workflow
 
 ### 1. Understand project shape

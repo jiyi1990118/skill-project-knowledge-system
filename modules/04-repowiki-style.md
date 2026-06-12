@@ -240,6 +240,19 @@ Use Chinese repowiki style when the user asks for Chinese/dominos-mobile-like ou
 - Prefer task-oriented wording: what to read first, which source files to verify, which commands are real, and what common assumptions are unsafe.
 - Use conservative claims: distinguish source-confirmed behavior from assumptions, stale docs, or partially verified behavior.
 
+### Generating diagrams with codegraph (optional)
+
+When codegraph MCP is available, use it to generate accurate Mermaid diagrams backed by current source structure:
+
+| Diagram type | Codegraph approach | Fallback |
+| --- | --- | --- |
+| File tree / module structure | `codegraph_files` for directory tree, then map to `graph TB` nodes | manual `ls` + Read |
+| Component relationships | `codegraph_explore` with related symbols, extract imports/dependencies | grep imports + Read |
+| Call flow / sequence | `codegraph_trace from→to` returns call path, map to `sequenceDiagram` | manual trace via Read |
+| Dependency graph | `codegraph_callers` + `codegraph_callees` for a symbol | grep + manual analysis |
+
+After generating diagram, verify node labels match actual file/symbol names and cite the codegraph query or source files in 图表来源.
+
 A strong repowiki output serves three readers at once:
 
 1. Humans who need encyclopedia-style background and diagrams.
@@ -267,6 +280,8 @@ Rules:
 - If line ranges are unknown, either open the file and find them, or mark the claim `[partially-verified]` / `[docs-only]` and avoid stating it as fact.
 - Do not invent line numbers from memory; line numbers shift across versions.
 - When the same fact appears in multiple files (e.g., a value declared in env and consumed in source), cite the declaration site, not the consumer.
+
+**Finding line ranges efficiently**: When codegraph is available, `codegraph_node` with `includeCode:true` returns symbol definitions with line ranges; `codegraph_explore` returns multiple symbols' source in one call. This is faster than grep + multiple Read calls. Fallback: grep for symbol, Read file, count lines manually.
 
 ### Multi-branch toolchain disambiguation
 
@@ -440,6 +455,8 @@ Recommended structure:
 - 文档变更应检查链接、标题和命令表述。
 - 代码变更必须回到源码和真实命令验证。
 - 高影响区域应最小范围修改并明确验证方式。
+- 使用 codegraph MCP 时：优先用 `codegraph_context` 理解任务背景，用 `codegraph_impact` 评估修改影响面，用 `codegraph_callers` 枚举调用方。
+- 使用 Context7 MCP 时：修改框架/库 API 使用前，查询当前版本文档验证 API 模式是否正确。
 ```
 
 ## Add `AI Agent 使用建议` to canonical docs

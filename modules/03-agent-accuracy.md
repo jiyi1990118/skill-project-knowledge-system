@@ -8,19 +8,50 @@ The goal is to document how to change code accurately, not just what the project
 
 Include a task-to-source routing matrix in `CLAUDE.md`, `AGENTS.md`, the canonical Agent index (`Docs/repowiki/zh/content/AI-Agent索引.md` for full repowiki, or `Docs/AI-Agent索引.md` for lightweight Docs), or optional `Docs/AI-Agent开发指南.md` when useful.
 
-Each row must include a concrete source anchor (file path or grep pattern), not a generic doc reference. Anchors let future Agents skip wiki reading and jump straight to source.
+Each row must include a concrete source anchor (file path, codegraph query, or grep pattern), not a generic doc reference. Anchors let future Agents skip wiki reading and jump straight to source.
 
-| Task type | Source anchor (path / grep) | Read first | Then verify | Common risks |
+**Prefer codegraph tools when available** (faster, more accurate). Fall back to grep only when codegraph index doesn't exist.
+
+| Task type | Source anchor (codegraph / grep fallback) | Read first | Then verify | Common risks |
 | --- | --- | --- | --- | --- |
 | Add page/view | route config dir + sibling page file | routing docs, neighboring pages | route config, layout, data fetching, navigation | wrong layout, cache mismatch, missing auth |
-| Add API call | API map dir + `grep '<apiName>'` for callers | service/API docs, existing domain API map | endpoint config, caller pattern, error handling | bypassing service layer, duplicate API names |
-| Change state | store dir + `grep '<storeName>'` for consumers | state docs, neighboring store/model | persistence, login/logout cleanup, consumers | stale cache, duplicated state source |
-| Change component | component dir + `grep '<ComponentName>'` for usages | component docs, similar components | props/events/slots/styles/global registration | global side effects, style leakage |
+| Add API call | `codegraph_search '<apiName>'` → `codegraph_callers` / `grep '<apiName>'` | service/API docs, existing domain API map | endpoint config, caller pattern, error handling | bypassing service layer, duplicate API names |
+| Change state | `codegraph_callers '<storeName>'` / store dir + `grep '<storeName>'` | state docs, neighboring store/model | persistence, login/logout cleanup, consumers | stale cache, duplicated state source |
+| Change component | `codegraph_callers '<ComponentName>'` / component dir + `grep '<ComponentName>'` | component docs, similar components | props/events/slots/styles/global registration | global side effects, style leakage |
 | Change build/deploy | `package.json` scripts + CI workflow files | build docs, package/config/CI files | scripts, env vars, output dirs | fake commands, wrong environment |
 | Change auth/security | auth middleware/guard files | auth/security docs, guards/middleware | token/session lifecycle, redirects, storage | weakening auth, leaking sensitive data |
-| Change analytics | tracking plugin/dir + `grep '<eventName>'` | tracking docs, existing events | route metadata, trigger timing, duplication | double tracking, missing source code |
+| Change analytics | `codegraph_search '<eventName>'` / tracking plugin/dir + `grep '<eventName>'` | tracking docs, existing events | route metadata, trigger timing, duplication | double tracking, missing source code |
 
-Rule: when generating this matrix for an actual project, replace placeholders with real paths discovered during source inspection. Do not ship the table with generic placeholders.
+Rule: when generating this matrix for an actual project, replace placeholders with real paths/symbols discovered during source inspection. Do not ship the table with generic placeholders.
+
+## Code intelligence for impact analysis
+
+When codegraph MCP server is available, use semantic code analysis instead of grep for faster and more accurate results.
+
+### Tool selection by analysis need
+
+| Analysis need | Codegraph tool (preferred) | Grep fallback |
+|---------------|---------------------------|---------------|
+| Find function/class/component | `codegraph_search "symbolName"` | `grep -rn "function symbolName\|class symbolName"` |
+| Find all callers | `codegraph_callers "symbolName"` | `grep -rn "symbolName"` + manual filtering |
+| Find what a function calls | `codegraph_callees "symbolName"` | Manual read + trace through code |
+| Trace execution path | `codegraph_trace from="SourceSymbol" to="TargetSymbol"` | Multiple grep + manual path assembly |
+| Impact of changing symbol | `codegraph_impact "symbolName"` | grep callers + manual dependency walk |
+| Get symbol definition + signature | `codegraph_node "symbolName"` | grep + Read file |
+| Survey related symbols | `codegraph_explore "symbol1 symbol2 file.ts"` | Multiple Read calls |
+| Project structure overview | `codegraph_files` | `find` + manual organization |
+
+**Why codegraph is better**:
+- Sub-millisecond queries vs multiple grep+read cycles
+- Captures indirect calls (callbacks, dynamic dispatch, React props)
+- Provides file:line locations with context
+- Can trace execution paths that grep cannot follow
+- Lower token cost (direct answers vs reading entire files)
+
+**When to fall back to grep**:
+- Codegraph index doesn't exist (`codegraph_status` returns error)
+- Searching in config files, docs, or non-code content
+- Need to search for string literals or patterns (not symbols)
 
 ## Pre-development source checklist
 
@@ -67,9 +98,10 @@ Document realistic verification paths. Do not claim runtime verification was com
 | Change area | Preferred verification | Fallback if unavailable |
 | --- | --- | --- |
 | UI/page | run app and manually exercise golden path | inspect route + component render path and say not runtime-tested |
-| API/service | run existing tests or local request flow | verify config and caller pattern, mark untested behavior |
+| API/service | run existing tests or local request flow + Context7 query for library API patterns | verify config and caller pattern, mark untested behavior |
 | State/store | run affected UI flow or store tests | trace actions/mutations/consumers manually |
 | Build/config | run target script | dry-read package/config and explain unverified risk |
+| Library upgrade | Context7 migration guide query + compatibility matrix + test execution | changelog read + grep for breaking changes, mark as partially verified |
 | Docs only | check links, commands, source citations | note docs-only validation |
 
 When generating Agent development guidance, derive verification examples from the actual project type and real scripts/configs:
@@ -124,6 +156,25 @@ Two label sets coexist; they describe different things and should not be substit
 Pair them when needed: a claim can be `[source-confirmed]` while the verification level for that finding is `read-only` — that combination simply means "the source clearly says X; I inspected but did not execute." Do not collapse the two sets into one label.
 
 ## Caller and consumer verification
+
+### Caller enumeration with code intelligence
+
+**When codegraph is available**, use semantic analysis for instant, accurate caller detection:
+
+1. **Find the symbol**: `codegraph_search "symbolName"` to verify it exists
+2. **Get all callers**: `codegraph_callers "symbolName"` returns complete caller list with file:line
+3. **Check impact radius**: `codegraph_impact "symbolName"` shows full dependency tree
+4. **Review caller source**: `codegraph_explore "symbolName"` to see caller implementations
+
+**Advantages over grep**:
+- Captures indirect calls (callbacks, HOCs, dynamic dispatch)
+- Instant results vs multiple grep iterations
+- Provides context (function signatures, call sites)
+- Can trace through React props, event handlers, etc.
+
+### Caller enumeration without codegraph (grep fallback)
+
+When codegraph is NOT available, fall back to manual grep enumeration:
 
 Before changing any shared symbol (API name, store action, exported component, public function), enumerate callers.
 
@@ -186,6 +237,32 @@ Dependency, runtime, and framework upgrades touch large surface area and frequen
    - For framework upgrades, verify routing/state/SSR/build-output behavior, not just compile success.
 8. Rollback strategy: keep the previous lockfile, document the revert command, confirm cache invalidation steps.
 9. Done statement must list per-component verification level (read-only / traced / executed / user-verified) and call out any unverified runtime behavior.
+
+## Library documentation verification with Context7
+
+When documenting or verifying library usage patterns, use Context7 to ensure accuracy against current documentation.
+
+**Workflow**:
+
+1. Identify library and version from lockfile/manifest
+2. Resolve library ID: `resolve-library-id libraryName="<name>" query="<usage context>"`
+3. Query specific usage: `query-docs libraryId="<id>" query="<specific API/config/pattern question>"`
+4. Compare documented pattern with actual implementation (use codegraph to find usage)
+5. Mark confidence level:
+   - `[Context7-verified]`: Pattern confirmed against current library docs
+   - `[version-specific]`: Pattern valid for detected version, may differ in other versions
+   - `[docs-unavailable]`: Context7 returned no results, fall back to code inspection
+
+**Example queries by scenario**:
+
+| Scenario | Context7 Query |
+| --- | --- |
+| React hooks usage | "How to use useEffect cleanup function with dependencies" |
+| Next.js routing | "App Router vs Pages Router routing patterns in Next.js 14" |
+| Prisma migrations | "How to handle schema migrations with existing data in Prisma" |
+| Express middleware | "Correct order for error handling middleware in Express" |
+
+**Token savings**: Context7 query (1-2K tokens) vs reading entire library docs or outdated training data.
 
 ## High-impact area detection
 

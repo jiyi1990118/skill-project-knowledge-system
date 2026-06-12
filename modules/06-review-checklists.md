@@ -36,6 +36,9 @@ Before finishing, verify:
 - Are source citations specific enough for important claims?
 - Are generated wiki claims verified against source rather than copied as authority?
 - Does the doc distinguish source-confirmed behavior from assumptions?
+- Are library API patterns verified against Context7 when documentation mentions specific library usage?
+- Are framework version-specific behaviors marked with version numbers?
+- Are deprecated API warnings included when Context7 flags them?
 - Are PWA/offline/native/test/CI/CD/ops/observability/backend claims backed by source?
 - Does the AI Agent index reduce wiki-reading scope and let an Agent reach the smallest useful source entrypoint in 1–2 hops?
 - Is a lightweight pointer to the canonical documentation entrypoint synced to project/reference memory when memory is available?
@@ -49,6 +52,9 @@ Before finishing, verify:
 - Are private URLs, tokens, credentials, and internal secrets excluded?
 - For development guidance, did you include impact analysis, high-impact areas, neighboring patterns, and verification paths?
 - Did you avoid making source-code changes unless requested?
+- If knowledge graph was built: are all key entities created with correct entity types?
+- If knowledge graph was built: do relations match actual codegraph patterns?
+- If knowledge graph was built: is graph usage included in AI Agent index?
 - If you edited the skill's own `README.md` or `SKILL.md`: does the README avoid duplicating SKILL.md's module index, request routing, glossary, or rule statements (and instead point to SKILL.md)?
 - If you edited or added a module file: do `SKILL.md` §Module index and the README's "当前结构" file list both match the actual `modules/` directory contents?
 
@@ -94,10 +100,10 @@ For generated or aligned repowiki-style docs:
 For docs intended to help future Agents develop or maintain the project:
 
 - Does the doc route common tasks to the smallest useful docs and source files?
-- Does the task routing matrix carry a **source anchor** (concrete path or grep pattern) for each row, not just a generic doc reference?
+- Does the task routing matrix carry a **source anchor** (concrete path, codegraph query, or grep pattern) for each row, not just a generic doc reference?
 - Does it tell Agents to verify **at least two** neighboring implementation patterns (not one), and how to handle divergent neighbors?
 - Does it identify high-impact files/modules?
-- Does it include change impact analysis guidance, including **caller enumeration** for shared symbols (grep, count, list, threshold)?
+- Does it include change impact analysis guidance, including **caller enumeration** for shared symbols (prefer codegraph when available: `codegraph_callers`, `codegraph_impact`; fallback: grep, count, list, threshold)?
 - Does it include the **verification level gradient** (read-only / traced / executed / user-verified) and prohibit claiming a higher level than actually performed?
 - Does it include realistic verification commands or manual flows?
 - For upgrade tasks, does it require per-version changelog reading, a compatibility matrix, and a rollback path?

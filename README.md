@@ -1,4 +1,4 @@
-# Project Knowledge System Builder / 项目知识系统构建师
+# Skill Project Onboarding / 项目知识系统构建师
 
 > 本 README 面向 skill 维护者与人类读者，不是 skill 的运行时入口。
 >
@@ -10,10 +10,20 @@
 
 生成 repowiki-style 知识库时，必须基于当前项目的真实源码、配置、脚本和运行入口；不能套用其它项目模板、旧 README 或未经验证的自动生成内容。输出应让未来 AI Agent 能更准确地开发和维护项目，同时通过任务导航、canonical 文档和源码验证入口减少不必要的 token 消耗。
 
+## MCP 集成增强（可选）
+
+Skill 已集成三个 MCP 服务器以提升效率和准确性（所有 MCP 均为可选增强，不可用时自动降级）：
+
+- **Codegraph MCP**: 语义代码分析（符号搜索、调用关系、影响分析）
+- **Context7 MCP**: 库文档实时查询（节省 10-50K tokens/查询，避免过时 API）
+- **Memory MCP**: 知识图谱构建（大型项目结构化导航，长期节省数百K tokens）
+
+详细实现见 `SKILL.md` §Module index 和 `modules/02-project-discovery.md`。
+
 ## 当前结构
 
 ```text
-project-knowledge-system-builder/
+skill-project-onboarding/
 ├── SKILL.md          # 运行入口：触发条件、非违规则、术语表、模块索引、最小工作流
 ├── README.md         # 维护者入口（本文件）
 └── modules/
@@ -48,7 +58,7 @@ project-knowledge-system-builder/
 在目标项目中启动 Claude Code 后，可以直接这样说：
 
 ```text
-请使用 project-knowledge-system-builder skill，帮我分析当前项目，并建立一套项目知识系统。
+请使用 skill-project-onboarding skill，帮我分析当前项目，并建立一套项目知识系统。
 
 目标：
 1. 生成项目记忆规范
@@ -67,7 +77,7 @@ project-knowledge-system-builder/
 如果项目已经有 repowiki，可以说：
 
 ```text
-请使用 project-knowledge-system-builder skill，帮我让当前项目的 repowiki 与源码现状对齐，并把对齐后的知识库输出到项目根目录 Docs/ 下，同时补充 AI Agent 导航层。
+请使用 skill-project-onboarding skill，帮我让当前项目的 repowiki 与源码现状对齐，并把对齐后的知识库输出到项目根目录 Docs/ 下，同时补充 AI Agent 导航层。
 
 重点：
 - 不重写整个 repowiki
@@ -81,7 +91,7 @@ project-knowledge-system-builder/
 如果项目还没有任何 AI 文档，可以说：
 
 ```text
-请使用 project-knowledge-system-builder skill，从零为当前项目建立 AI Agent 可用的项目知识系统。
+请使用 skill-project-onboarding skill，从零为当前项目建立 AI Agent 可用的项目知识系统。
 
 请先分析源码和配置，然后建议并生成：
 - CLAUDE.md 或 AGENTS.md
@@ -140,6 +150,6 @@ Docs/<专题目录>/相关专题.md
 ## 当前 skill 文件路径
 
 ```text
-~/.claude/skills/project-knowledge-system-builder/SKILL.md
-~/.claude/skills/project-knowledge-system-builder/modules/
+~/.claude/skills/skill-project-onboarding/SKILL.md
+~/.claude/skills/skill-project-onboarding/modules/
 ```

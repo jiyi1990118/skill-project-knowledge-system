@@ -1,5 +1,5 @@
 ---
-name: project-knowledge-system-builder
+name: skill-project-onboarding
 description: Build and maintain a reusable project knowledge system, including memory rules, project memory definitions, human-facing docs or repowiki, and AI Agent navigation aligned with source truth.
 ---
 
@@ -95,8 +95,8 @@ This skill is modular to reduce default token/context cost. Read only the module
 | Module | Read when |
 | --- | --- |
 | `modules/01-core-principles.md` | Always for substantive tasks; contains source-truth, request routing, evidence, output scale, and layering rules. |
-| `modules/02-project-discovery.md` | Analyzing project facts, identifying project type, creating fact inventory, or planning canonical docs. |
-| `modules/03-agent-accuracy.md` | Creating guidance that helps future Agents safely develop or maintain an existing project. |
+| `modules/02-project-discovery.md` | Analyzing project facts, identifying project type, creating fact inventory, or planning canonical docs. Includes code intelligence (codegraph) and library documentation verification (Context7) workflows. |
+| `modules/03-agent-accuracy.md` | Creating guidance that helps future Agents safely develop or maintain an existing project. Includes code intelligence for impact analysis, caller enumeration, and Context7 for library API verification. |
 | `modules/04-repowiki-style.md` | Creating or aligning `Docs/`, repowiki-style topic docs, AI Agent index, or canonical doc usage notes. |
 | `modules/05-output-templates.md` | Producing plans, audits, source-alignment reports, impact reports, or reusable instruction templates. |
 | `modules/06-review-checklists.md` | Final review before finishing documentation, repowiki, alignment, or knowledge-system work. |
@@ -135,9 +135,9 @@ Each request mode usually needs only specific module sections — not full modul
 | Mode | Read these sections first |
 | --- | --- |
 | Audit existing docs | 02 §Anti-hallucination gates, 02 §Engineering fact inventory, 05 §Documentation-system audit template, 06 §Source-alignment checklist |
-| Generate repowiki | 02 §Project type decision tree, 02 §Engineering fact inventory, 04 §Project-type repowiki presets, 04 §Repowiki-style document template, 04 §Preferred repowiki style, 05 §Knowledge-system plan template, 06 §Repowiki-style checklist |
-| Update CLAUDE.md / AGENTS.md | 02 §Standard workflow, 03 §Development task routing, 03 §High-impact area detection, 05 §Project-level Agent instruction template |
-| Build Agent development guide | 03 (all), 05 §Change-impact report template, 06 §AI Agent development-accuracy checklist |
+| Generate repowiki | 02 §Code intelligence approach, 02 §Project type decision tree, 02 §Engineering fact inventory, 04 §Project-type repowiki presets, 04 §Repowiki-style document template, 04 §Preferred repowiki style, 05 §Knowledge-system plan template, 06 §Repowiki-style checklist |
+| Update CLAUDE.md / AGENTS.md | 02 §Code intelligence approach, 02 §Standard workflow, 03 §Development task routing, 03 §Code intelligence for impact analysis, 03 §High-impact area detection, 05 §Project-level Agent instruction template |
+| Build Agent development guide | 02 §Code intelligence approach, 03 (all), 05 §Change-impact report template, 06 §AI Agent development-accuracy checklist |
 | Memory norms | 07 (all), 06 §Final review checklist (memory parts) |
 | Source-alignment check | 01 §Source-of-truth priority, 02 §Anti-hallucination gates, 05 §Source-alignment report template, 06 §Source-alignment checklist |
 | Reorganize / move / rename docs | 04 §Documentation move and rename: index/link sync, 06 §Documentation reorganization checklist, 07 §Scope verification |
@@ -157,7 +157,16 @@ Terms used across modules. Definitions live here so the meaning does not drift a
 | AI Agent index | The navigation file at `Docs/AI-Agent索引.md` (lightweight) or `Docs/repowiki/zh/content/AI-Agent索引.md` (full repowiki). |
 | Engineering fact inventory | The fact matrix defined in `modules/02-project-discovery.md` §Engineering fact inventory. |
 | Repowiki-style output | The Chinese topic-encyclopedia style defined in `modules/04-repowiki-style.md` §Preferred repowiki style. |
-| Source anchor | A concrete file path or grep pattern, not a doc reference. Required in task routing rows. |
+| Source anchor | A concrete file path, codegraph query, or grep pattern, not a doc reference. Required in task routing rows. |
+| Code intelligence | Semantic code analysis using codegraph MCP server (faster, more accurate than grep). |
+| Codegraph-first | Workflow pattern: check codegraph availability, use it when present, fall back to grep/Read only when needed. |
+| Library documentation verification | Using Context7 MCP to query current library/framework documentation instead of relying on training data. |
+| Context7-verified | Confidence label: pattern confirmed against current library documentation via Context7 query. |
+| version-specific | Confidence label: pattern valid for detected library version, may differ across versions. |
+| docs-unavailable | Confidence label: Context7 returned no results; fell back to code inspection or training data. |
+| Knowledge graph | Optional persistent project structure model built with Memory MCP (entities + relations). |
+| Entity type | Classification for knowledge graph nodes: Module, Component, Service, Route, API, Store, Config, Test. |
+| Relation type | Classification for knowledge graph edges: depends-on, calls, uses, renders, contains, imports. |
 | Read-before-cite | Every file inside a `<cite>` block must have been opened (Read tool) in the current session. |
 | Defining module / Enforcement module | The module that owns a rule (e.g. 04 owns citation discipline) vs. the module that checks it at review time (e.g. 06). |
 

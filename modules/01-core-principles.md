@@ -197,6 +197,12 @@ Use these labels in audit reports, migration notes, and temporary review output 
 - `[stale-or-conflicting]` — conflicts with current source/config or appears outdated.
 - `[unverified]` — plausible but not backed by inspected evidence.
 
+**Library/framework verification labels** (use when documenting library API usage with Context7 MCP):
+
+- `[Context7-verified]` — pattern confirmed against current library documentation via Context7 query.
+- `[version-specific]` — pattern valid for detected library version, may differ across versions.
+- `[docs-unavailable]` — Context7 returned no results; fell back to code inspection or training data.
+
 Avoid cluttering final human-facing docs with labels unless uncertainty matters for readers.
 
 These labels describe **how trustworthy a written claim is** — distinct from the **verification level gradient** (`read-only` / `traced` / `executed` / `user-verified`) in `modules/03-agent-accuracy.md`, which describes **what the Agent actually did**. The two sets are complementary, not substitutes; see 03 §Verification level vs claim confidence label for how to pair them.
