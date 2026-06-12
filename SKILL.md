@@ -1,5 +1,5 @@
 ---
-name: skill-project-onboarding
+name: skill-project-knowledge-system
 description: Build and maintain a reusable project knowledge system, including memory rules, project memory definitions, human-facing docs or repowiki, and AI Agent navigation aligned with source truth.
 ---
 
