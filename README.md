@@ -1,31 +1,34 @@
+[English](README.md) | [中文](README.zh.md)
+
 # Skill Project Knowledge System / 项目知识系统构建师
 
-> 本 README 面向 skill 维护者与人类读者，不是 skill 的运行时入口。
+> This README is for skill maintainers and human readers — it is not the runtime entry point.
 >
-> - Skill 运行入口：[`SKILL.md`](./SKILL.md)
-> - 模块目录：[`modules/`](./modules/)
-> - 运行时规则（请求分流、模块索引、术语表、不可违反规则、最小工作流）全部在 `SKILL.md` 内，不在本文件复述。
+> - Skill runtime entry: [`SKILL.md`](./SKILL.md)
+> - Modules: [`modules/`](./modules/)
+> - Runtime rules (request routing, module index, glossary, hard rules, minimum workflow) all live in `SKILL.md` and are deliberately not repeated here.
 
-这个 skill 用于给一个项目建立或优化"项目知识系统"，让项目同时适合人类开发者阅读，也适合 AI Agent 后续快速、安全地开发。
+This skill builds or optimizes a "project knowledge system" that serves both human developers and the AI Agents that work on the project.
 
-生成 repowiki-style 知识库时，必须基于当前项目的真实源码、配置、脚本和运行入口；不能套用其它项目模板、旧 README 或未经验证的自动生成内容。输出应让未来 AI Agent 能更准确地开发和维护项目，同时通过任务导航、canonical 文档和源码验证入口减少不必要的 token 消耗。
+When generating a repowiki-style knowledge base, you must ground every statement in the project's real source code, configuration, scripts, and runtime entry points. Do not borrow from other project templates, stale READMEs, or unverified auto-generated content. The output should help future AI Agents develop and maintain the project more accurately, while reducing token consumption through task navigation, canonical docs, and source-verified entry points.
 
-## MCP 集成增强（可选）
+## MCP Integration (Optional)
 
-Skill 已集成三个 MCP 服务器以提升效率和准确性（所有 MCP 均为可选增强，不可用时自动降级）：
+The skill integrates three MCP servers to improve efficiency and accuracy. All MCPs are optional enhancements and fall back gracefully when unavailable.
 
-- **Codegraph MCP**: 语义代码分析（符号搜索、调用关系、影响分析）
-- **Context7 MCP**: 库文档实时查询（节省 10-50K tokens/查询，避免过时 API）
-- **Memory MCP**: 知识图谱构建（大型项目结构化导航，长期节省数百K tokens）
+- **Codegraph MCP** — semantic code analysis (symbol search, call relationships, impact analysis).
+- **Context7 MCP** — real-time library documentation lookup (saves 10–50K tokens per query, avoids outdated APIs).
+- **Memory MCP** — knowledge graph construction (structured navigation for large projects; saves hundreds of K tokens over time).
 
-详细实现见 `SKILL.md` §Module index 和 `modules/02-project-discovery.md`。
+See `SKILL.md` §Module index and `modules/02-project-discovery.md` for implementation details.
 
-## 当前结构
+## Current Structure
 
 ```text
 skill-project-knowledge-system/
-├── SKILL.md          # 运行入口：触发条件、非违规则、术语表、模块索引、最小工作流
-├── README.md         # 维护者入口（本文件）
+├── SKILL.md          # Runtime entry: trigger conditions, hard rules, glossary, module index, minimum workflow
+├── README.md         # Maintainer entry (this file)
+├── README.zh.md      # Chinese version of this file
 └── modules/
     ├── 01-core-principles.md
     ├── 02-project-discovery.md
@@ -36,76 +39,76 @@ skill-project-knowledge-system/
     └── 07-memory-policy.md
 ```
 
-每个模块的用途、何时读取、章节级路由请看 `SKILL.md` §Module index 和 §Section-level routing；不要在本 README 复述。
+For each module's purpose, when to read it, and section-level routing, see `SKILL.md` §Module index and §Section-level routing. Do not repeat them in this README.
 
-## 适合什么时候用
+## When to Use
 
-当你在新项目或已有项目中想做这些事情时使用：
+Use this skill when you want to do any of the following on a new or existing project:
 
-- 建立类似 `CLAUDE.md` / `AGENTS.md` 的项目级 AI Agent 说明
-- 建立类似 `AI-MEMORY.md` 的记忆规范
-- 在项目根目录 `Docs/` 下生成或整理文档结构
-- 在项目根目录 `Docs/` 下生成或优化 repowiki-style 知识库
-- 给大型文档增加 `AI-Agent索引.md`
-- 给 canonical 文档增加 `AI Agent 使用建议`
-- 给已有项目补充 `AI-Agent开发指南.md`
-- 检查 README / docs / repowiki 中是否有与源码不一致的内容
-- 把已有文档改造成"人类知识库 + AI Agent 导航层"的双用途结构
-- 整理、迁移、重命名已有文档并同步索引/链接/记忆指针
+- Create project-level AI Agent instructions such as `CLAUDE.md` / `AGENTS.md`.
+- Create project memory rules such as `AI-MEMORY.md`.
+- Generate or organize documentation under the project's root `Docs/`.
+- Generate or optimize a repowiki-style knowledge base under `Docs/`.
+- Add an `AI-Agent索引.md` entry point to large documents.
+- Add "AI Agent usage notes" to canonical documents.
+- Add an `AI-Agent开发指南.md` to existing projects.
+- Check whether the README, docs, or repowiki disagree with the current source code.
+- Refactor existing docs into a dual-purpose "human knowledge base + AI Agent navigation" structure.
+- Reorganize, migrate, or rename existing docs and keep indexes, links, and memory pointers in sync.
 
-## 推荐使用方式
+## Recommended Usage
 
-在目标项目中启动 Claude Code 后，可以直接这样说：
+After launching Claude Code in the target project, you can say:
 
 ```text
-请使用 skill-project-knowledge-system skill，帮我分析当前项目，并建立一套项目知识系统。
+Please use the skill-project-knowledge-system skill to analyze the current project and build a project knowledge system.
 
-目标：
-1. 生成项目记忆规范
-2. 生成项目级 AI Agent 协作说明
-3. 规划项目根目录 `Docs/` 和 repowiki-style 知识库结构及文档完整构建
-4. 增加 AI Agent 任务导航入口
-5. 检查现有文档是否和源码事实不一致
+Goals:
+1. Generate project memory rules
+2. Generate project-level AI Agent collaboration notes
+3. Plan the project root `Docs/` and repowiki-style knowledge base structure, then fully build the documentation
+4. Add AI Agent task navigation entry points
+5. Verify whether existing documentation matches source-code facts
 
-要求：
-- 以源码和真实配置为准
-- 不要凭 README 或旧文档做假设
-- 不要生成不存在的脚本命令
-- 保留人类知识库价值，同时让 AI Agent 后续开发更快更安全
+Requirements:
+- Ground everything in source code and real configuration
+- Do not make assumptions from READMEs or old docs
+- Do not generate script commands that do not exist
+- Preserve the human knowledge base while making AI Agent development faster and safer
 ```
 
-如果项目已经有 repowiki，可以说：
+If the project already has a repowiki:
 
 ```text
-请使用 skill-project-knowledge-system skill，帮我让当前项目的 repowiki 与源码现状对齐，并把对齐后的知识库输出到项目根目录 Docs/ 下，同时补充 AI Agent 导航层。
+Please use the skill-project-knowledge-system skill to align the project's repowiki with the current source code, output the aligned knowledge base to the project root `Docs/`, and add an AI Agent navigation layer.
 
-重点：
-- 不重写整个 repowiki
-- 保留自动生成百科结构
-- 将新建或对齐后的 repowiki-style 文档放到项目根目录 Docs/ 下
-- 新增 Docs/AI-Agent索引.md
-- 给 canonical 文档添加 AI Agent 使用建议
-- 校验 package scripts、架构描述、测试/lint 状态、构建/部署说明是否准确
+Focus:
+- Do not rewrite the entire repowiki
+- Keep the auto-generated encyclopedia structure
+- Place newly created or aligned repowiki-style documents under `Docs/`
+- Add `Docs/AI-Agent索引.md`
+- Add "AI Agent usage notes" to canonical documents
+- Verify that package scripts, architecture descriptions, test/lint status, and build/deploy instructions are accurate
 ```
 
-如果项目还没有任何 AI 文档，可以说：
+If the project has no AI documentation yet:
 
 ```text
-请使用 skill-project-knowledge-system skill，从零为当前项目建立 AI Agent 可用的项目知识系统。
+Please use the skill-project-knowledge-system skill to build an AI-Agent-usable project knowledge system from scratch.
 
-请先分析源码和配置，然后建议并生成：
-- CLAUDE.md 或 AGENTS.md
+Please analyze the source code and configuration first, then suggest and generate:
+- CLAUDE.md or AGENTS.md
 - AI-MEMORY.md
 - Docs/AI-Agent索引.md
 - Docs/项目概述.md
 - Docs/开发者指南.md
 
-先给计划，等我确认后再写文件。
+Give a plan first, wait for my confirmation, then write the files.
 ```
 
-## 常见输出文件
+## Common Output Files
 
-根据项目情况，这个 skill 可能生成或更新这些文件：
+Depending on the project, this skill may generate or update the following files:
 
 ```text
 CLAUDE.md
@@ -117,37 +120,37 @@ Docs/AI-Agent索引.md
 Docs/AI-Agent开发指南.md
 Docs/项目概述.md
 Docs/开发者指南.md
-Docs/<专题目录>/相关专题.md
+Docs/<topic-dir>/<topic>.md
 ```
 
-不一定每个项目都需要全部文件。简洁项目文档和 Agent 入口默认放在项目根目录 `Docs/` 下；完整 repowiki-style 专题百科默认放在 `Docs/repowiki/zh/content/` 下。已有 `.qoder/repowiki/`、`docs/` 或 `wiki/` 可作为读取、对齐或迁移来源，但不要作为新建输出位置，除非用户明确要求。
+Not every project needs all of these. For simple project docs and Agent entry points, default to placing them under the project root `Docs/`; for full repowiki-style topic encyclopedias, default to placing them under `Docs/repowiki/zh/content/`. Existing `.qoder/repowiki/`, `docs/`, or `wiki/` may be used as sources for read / alignment / migration, but not as new output locations unless the user explicitly requests.
 
-## 模块维护规范
+## Module Maintenance Rules
 
-维护这个 skill 时：
+When maintaining this skill:
 
-- `SKILL.md` 保持短而操作化，只放触发、硬规则、术语表、模块索引、最小流程、章节级路由。
-- 大段规范、模板、清单放入 `modules/`。
-- 新增能力时优先判断属于哪个模块，不要把长正文重新塞回 `SKILL.md`。
-- 如果新增模块，必须同步更新 `SKILL.md` §Module index 和本 README 当前结构小节中的模块清单。
-- 模块内容也要遵守"源码事实优先、不要制造不存在能力"的原则。
-- 修改任何模块的章节名时，grep 项目内引用并同步更新（见 `modules/04-repowiki-style.md` §Documentation move and rename）。
-- README 不要复述 `SKILL.md` 的请求分流表、模块说明表、规则正文；只放维护者/人类入口信息，规则点回 `SKILL.md`。
+- Keep `SKILL.md` short and operational: only triggers, hard rules, glossary, module index, minimum flow, and section-level routing.
+- Put long specs, templates, and checklists into `modules/`.
+- When adding a new capability, first decide which module it belongs to; do not stuff long content back into `SKILL.md`.
+- If you add a new module, update `SKILL.md` §Module index and the module list in the "Current Structure" section of this README.
+- Module content must also follow "source-of-truth first, never invent nonexistent capabilities".
+- When changing a section title in any module, grep the project for references and update them in sync (see `modules/04-repowiki-style.md` §Documentation move and rename).
+- Do not repeat `SKILL.md`'s request-routing table, module-description table, or rule body in this README. This README is only for maintainers / humans; point back to `SKILL.md` for rules.
 
-## 不适合做什么
+## What This Skill Is Not For
 
-不要用这个 skill 来：
+Do not use this skill to:
 
-- 直接实现业务功能
-- 大规模重构代码
-- 生成不存在的测试或构建能力
-- 把所有源码结构塞进 memory
-- 用 memory 替代项目文档或源码验证
-- 把自动生成 wiki 当作源码行为证据
-- 删除已有百科式文档
-- 用 AI Agent 文档完全替代人类知识库
+- Directly implement business features
+- Perform large-scale code refactors
+- Generate nonexistent tests or build capabilities
+- Dump the entire source structure into memory
+- Replace project documentation or source verification with memory recall
+- Treat an auto-generated wiki as proof of runtime behavior
+- Delete existing human encyclopedia-style documentation
+- Completely replace the human knowledge base with AI Agent documents
 
-## 当前 skill 文件路径
+## Current Skill File Paths
 
 ```text
 ~/.claude/skills/skill-project-knowledge-system/SKILL.md
